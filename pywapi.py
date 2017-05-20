@@ -72,7 +72,7 @@ LOCID_SEARCH_URL     = 'http://wxdata.weather.com/wxdata/search/search?where=%s'
 
 WOEID_SEARCH_URL     = 'http://query.yahooapis.com/v1/public/yql'
 WOEID_QUERY_STRING   = 'select line1, line2, line3, line4, ' + \
-                       'woeid from geo.placefinder where text="%s"'
+                       'woeid from geo.places where text="%s"'
 
 #WXUG_BASE_URL        = 'http://api.wunderground.com/auto/wui/geo'
 #WXUG_FORECAST_URL    = WXUG_BASE_URL + '/ForecastXML/index.xml?query=%s'
@@ -967,13 +967,15 @@ def get_woeid_from_yahoo(search_string):
     yahoo_woeid_result = json.loads(json_response)
 
     try:
-        result = yahoo_woeid_result['query']['results']['Result']
+        result = yahoo_woeid_result['query']['results']['place']
     except KeyError:
         # On error, returned JSON evals to dictionary with one key, 'error'
         return yahoo_woeid_result
     except TypeError:
         return {'error': 'No matching place names found'}
-
+    
+    #geo-places doesn't return this sort of structure any more
+    '''
     woeid_data = {}
     woeid_data['count'] = yahoo_woeid_result['query']['count']
     for i in xrange(yahoo_woeid_result['query']['count']):
@@ -986,8 +988,8 @@ def get_woeid_from_yahoo(search_string):
                      if place_data[tag] is not None]
         place_name = ', '.join(name_lines)
         woeid_data[i] = (place_data['woeid'], place_name)
-
-    return woeid_data
+    '''
+    return result['woeid']
     
 def heat_index(temperature, humidity, units = 'metric'):
     """Calculate Heat Index for the specified temperature and humidity
